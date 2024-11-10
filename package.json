@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --loader ts-node/esm --no-warnings src/server.ts",
+    "dev": "next dev",
     "build": "next build",
-    "start": "NODE_ENV=production node --loader ts-node/esm src/server.ts",
+    "start": "next start -p 3000",
     "lint": "next lint",
     "test": "jest --detectOpenHandles"
   },
@@ -36,6 +36,7 @@
     "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.2",
     "ws": "^8.18.0",
+    "zod": "^3.23.8",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
@@ -55,16 +56,11 @@
     "@typescript-eslint/parser": "^7.18.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.1.0",
+    "eslint-config-next": "^14.1.0",
     "postcss": "^8.4.47",
     "prisma": "^5.22.0",
     "redux-mock-store": "^1.5.5",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.3.3"
-  },
-  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
-  "main": "jest.config.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }

@@ -1,36 +1,18 @@
-modules = ["nodejs-20", "web"]
+run = "npm run start"
+hidden = [".build", ".config"]
 
 [nix]
 channel = "stable-24_05"
 
-# Development configuration
-run = """
-npm install
-npx prisma generate
-npm run dev
-"""
-
-# Build configuration
 [deployment]
-build = [
-  "npm install",
-  "npx prisma generate",
-  "npm run build"
-]
-run = ["npm", "start"]
+run = ["sh", "-c", "npm run start"]
 deploymentTarget = "cloudrun"
+ignorePorts = false
 
-# Port configuration
 [[ports]]
 localPort = 3000
 externalPort = 80
 
-# Environment configuration
-[env]
-NEXT_PUBLIC_APP_URL = "https://systimznew.fooh.repl.co"
-NEXTAUTH_URL = "https://systimznew.fooh.repl.co"
-
-# Language configuration
 [languages.typescript]
 pattern = "**/{*.ts,*.tsx}"
 syntax = "typescript"
@@ -38,11 +20,17 @@ syntax = "typescript"
 [languages.typescript.languageServer]
 start = ["typescript-language-server", "--stdio"]
 
-# Package manager configuration
 [packager]
 language = "nodejs"
 
 [packager.features]
 packageSearch = true
 guessImports = true
-enabledForHosting = false
+
+[env]
+XDG_CONFIG_HOME = "/home/runner/.config"
+PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin"
+npm_config_prefix = "/home/runner/$REPL_SLUG/.config/npm/node_global"
+
+[gitHubImport]
+requiredFiles = [".replit", "replit.nix", ".config"]

@@ -22,8 +22,6 @@ export const nextConfig = {
     });
     return config;
   },
-  // Optimize for production deployment
-  output: 'standalone',
   poweredByHeader: false,
   // Security headers
   async headers() {
