@@ -1,202 +1,224 @@
 # Production Deployment Guide
 
-## Replit Deployment
+## Prerequisites
 
-### Prerequisites
-1. GitHub repository with your project
-2. Replit account
-3. PostgreSQL database (provided by Replit)
+1. Replit account with deployment access
+2. Node.js v20.16.0 or higher
+3. Neon PostgreSQL database
 4. Environment variables ready
 
-### Environment Setup
+## Environment Variables
 
-#### 1. Environment Variables
-Set up these environment variables in Replit Secrets (Tools > Secrets):
-```
+Ensure these are set in Replit Secrets:
+
+```bash
+# Authentication
 NEXTAUTH_SECRET=systimz_production_secret_key_123
 NEXTAUTH_URL=https://systimznew.fooh.repl.co
+
+# Database
 DATABASE_URL=postgresql://neondb_owner:D0aCKpUjrFf1@ep-divine-bush-a49hwonr.us-east-1.aws.neon.tech/neondb?sslmode=require
+PGHOST=ep-divine-bush-a49hwonr.us-east-1.aws.neon.tech
+PGUSER=neondb_owner
+PGPASSWORD=D0aCKpUjrFf1
+PGDATABASE=neondb
+PGPORT=5432
+
+# API Keys
 HEYGEN_API_KEY=MjYwZjg0OTFiMzQ5NGZiOTgwZTdhZDY0Njc3NTNjMGQtMTczMDg2Mzk1MQ==
+
+# Application
 NEXT_PUBLIC_APP_URL=https://systimznew.fooh.repl.co
 ```
 
-#### 2. PostgreSQL Setup
-1. Enable PostgreSQL:
-   - Click on "Tools" in Replit
-   - Select "PostgreSQL"
-   - Click "Enable PostgreSQL"
-   - Wait for initialization
+## Deployment Steps
 
-2. Database Migration:
+### 1. Database Setup
+
+1. Verify Neon database connection:
    ```bash
-   npx prisma generate
-   npx prisma migrate deploy
+   PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "\dt"
    ```
 
-### Deployment Process
+2. Apply database schema:
+   ```bash
+   PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -f schema.sql
+   ```
 
-#### 1. Import Repository
-1. Go to Replit dashboard
-2. Click "Create Repl"
-3. Choose "Import from GitHub"
-4. Enter repository URL
-5. Select "Node.js" as language
+3. Verify schema deployment:
+   ```bash
+   PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "\d users"
+   ```
 
-#### 2. Configuration Files
+### 2. Application Deployment
 
-##### .replit
-```toml
-modules = ["nodejs-20", "web"]
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-[nix]
-channel = "stable-24_05"
+2. Build the application:
+   ```bash
+   npm run build
+   ```
 
-# Development configuration
-run = """
-npm install
-npx prisma generate
-npm run dev
-"""
+3. Start the production server:
+   ```bash
+   npm start
+   ```
 
-# Build configuration
-[deployment]
-build = [
-  "npm install",
-  "npx prisma generate",
-  "npm run build"
-]
-run = ["npm", "start"]
-deploymentTarget = "cloudrun"
+### 3. Replit Configuration
 
-# Port configuration
-[[ports]]
-localPort = 3000
-externalPort = 80
-```
+1. Configure build command in `.replit`:
+   ```toml
+   run = "npm start"
+   
+   [nix]
+   channel = "stable-24_05"
+   
+   [deployment]
+   run = ["sh", "-c", "npm start"]
+   deploymentTarget = "cloudrun"
+   
+   [[ports]]
+   localPort = 3000
+   externalPort = 80
+   
+   [[ports]]
+   localPort = 5432
+   externalPort = 5432
+   ```
 
-##### Server Configuration (server.ts)
-```typescript
-const dev = process.env.NODE_ENV !== 'production';
-const hostname = '0.0.0.0';
-const port = parseInt(process.env.PORT || '3000', 10);
+2. Configure Nix packages in `replit.nix`:
+   ```nix
+   { pkgs }: {
+     deps = [
+       pkgs.postgresql_15
+       pkgs.nodejs_20
+     ];
+     env = {
+       DATABASE_URL = "postgresql://username:password@hostname/database?sslmode=require";
+     };
+   }
+   ```
 
-const app = next({ dev, hostname, port });
-const handle = app.getRequestHandler();
-```
+## Post-Deployment Verification
 
-#### 3. Build and Start
-1. Initial setup runs automatically:
-   - Dependencies installation
-   - Prisma client generation
-   - Database migrations
-   - Application build
+### 1. Database Checks
+- Verify database connection
+- Check schema version
+- Test queries
+- Monitor connection pool
+- Verify SSL/TLS encryption
 
-2. Server starts automatically:
-   - Next.js server
-   - WebSocket server
-   - Database connections
+### 2. Application Checks
+- Test authentication flow
+- Verify WebSocket connections
+- Check API endpoints
+- Test avatar streaming
+- Monitor error logs
 
-### Monitoring and Maintenance
+### 3. Performance Checks
+- Response times
+- Memory usage
+- CPU utilization
+- Database query performance
+- WebSocket latency
 
-#### 1. Logs and Monitoring
-- Check Replit console for server logs
-- Monitor WebSocket connections
-- Track database performance
-- Watch error reports
+## Monitoring
 
-#### 2. Updates and Maintenance
-- Push updates to GitHub
-- Replit automatically pulls changes
-- Run migrations when schema changes
-- Monitor resource usage
+### Key Metrics
+- Server status
+- Database connections
+- Error rates
+- Response times
+- Memory usage
+- CPU usage
+- WebSocket connections
+- Active sessions
 
-#### 3. Troubleshooting
-Common issues and solutions:
+### Logging
+- Application logs
+- Database logs
+- Error reports
+- Access logs
+- Performance metrics
 
-1. Database Connection Issues
-   - Verify DATABASE_URL in Secrets
-   - Check PostgreSQL status
-   - Run `prisma generate`
+## Maintenance
 
-2. WebSocket Connection Issues
-   - Check port configuration
-   - Verify WebSocket server status
-   - Monitor connection logs
+### Regular Tasks
+- Monitor error logs
+- Check database performance
+- Update dependencies
+- Backup verification
+- Security updates
 
-3. Build Issues
-   - Clear .next directory
-   - Rebuild node_modules
-   - Check build logs
+### Database Maintenance
+- Monitor connection pools
+- Check query performance
+- Verify backups
+- Update indexes
+- Clean old sessions
 
-### Security Considerations
+## Security
 
-#### 1. Environment Variables
-- Keep secrets in Replit Secrets
-- Never commit sensitive data
-- Rotate secrets periodically
+### SSL/TLS
+- Verify SSL certificates
+- Check SSL configuration
+- Monitor SSL expiry
+- Test SSL connection
 
-#### 2. Database Security
-- Use SSL connection
-- Implement proper access controls
-- Regular backups
+### Authentication
+- Monitor auth failures
+- Check session management
+- Verify token expiry
+- Test OAuth providers
 
-#### 3. API Security
-- Rate limiting
-- CORS configuration
-- Input validation
-
-### Performance Optimization
-
-#### 1. Build Optimization
-- Enable output compression
-- Optimize images
-- Minimize bundle size
-
-#### 2. Runtime Optimization
-- Configure caching
-- Optimize database queries
-- Monitor memory usage
-
-#### 3. Network Optimization
-- CDN configuration
-- API response optimization
-- WebSocket efficiency
-
-### Backup and Recovery
-
-#### 1. Database Backups
-- Regular automated backups
-- Backup before migrations
+### Database
+- Check connection encryption
+- Monitor access patterns
+- Verify backup encryption
 - Test restore procedures
 
-#### 2. Configuration Backups
-- Version control for configs
-- Document all changes
-- Maintain recovery docs
+## Troubleshooting
 
-#### 3. Recovery Procedures
-1. Stop services
-2. Restore backups
-3. Verify data
-4. Restart services
-5. Confirm functionality
+### Common Issues
+1. Database Connection
+   - Check connection string
+   - Verify SSL settings
+   - Test network connectivity
+   - Check credentials
 
-### Support and Resources
+2. Application Errors
+   - Check error logs
+   - Verify environment variables
+   - Test memory usage
+   - Monitor WebSocket status
 
-#### 1. Documentation
-- API documentation
-- Database schema
-- Configuration guide
-- Troubleshooting guide
+3. Performance Issues
+   - Check database queries
+   - Monitor memory leaks
+   - Verify caching
+   - Test connection pools
 
-#### 2. Support Channels
-- Replit support
-- GitHub issues
-- Technical team contacts
-- Emergency procedures
+## Rollback Procedures
 
-#### 3. Monitoring Tools
-- Error tracking
-- Performance metrics
-- Usage statistics
-- Alert systems
+1. Database
+   - Access Neon console
+   - Select backup point
+   - Initiate restore
+   - Verify data integrity
+
+2. Application
+   - Stop current deployment
+   - Deploy previous version
+   - Verify functionality
+   - Monitor performance
+
+## Support Contacts
+
+- Neon Support: support@neon.tech
+- Replit Support: https://replit.com/support
+- HeyGen Support: [Contact Details]
+- Team Lead: [Contact Details]
+- DevOps: [Contact Details]

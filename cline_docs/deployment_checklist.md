@@ -8,6 +8,11 @@
   NEXTAUTH_SECRET=systimz_production_secret_key_123
   NEXTAUTH_URL=https://systimznew.fooh.repl.co
   DATABASE_URL=postgresql://neondb_owner:D0aCKpUjrFf1@ep-divine-bush-a49hwonr.us-east-1.aws.neon.tech/neondb?sslmode=require
+  PGHOST=ep-divine-bush-a49hwonr.us-east-1.aws.neon.tech
+  PGUSER=neondb_owner
+  PGPASSWORD=D0aCKpUjrFf1
+  PGDATABASE=neondb
+  PGPORT=5432
   HEYGEN_API_KEY=MjYwZjg0OTFiMzQ5NGZiOTgwZTdhZDY0Njc3NTNjMGQtMTczMDg2Mzk1MQ==
   NEXT_PUBLIC_APP_URL=https://systimznew.fooh.repl.co
   ```
@@ -42,15 +47,18 @@
   ```
 
 ### Database
-- [ ] Run database migrations
+- [ ] Verify Neon PostgreSQL connection:
   ```bash
-  npx prisma migrate deploy
+  PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "\dt"
   ```
-- [ ] Verify database schema
+- [ ] Check schema status:
   ```bash
-  npx prisma db push --preview-feature
+  PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -f schema.sql
   ```
-- [ ] Check database connections
+- [ ] Verify database indexes
+- [ ] Test connection pooling
+- [ ] Confirm SSL/TLS encryption
+- [ ] Check database backups
 
 ### Build Process
 - [ ] Clean build directory
@@ -67,6 +75,7 @@
 ### Replit Configuration
 - [ ] Verify .replit file configuration
 - [ ] Check environment variables in Replit Secrets
+- [ ] Verify PostgreSQL 15.7 in replit.nix
 - [ ] Test build command in Replit
 - [ ] Verify WebSocket server configuration
 - [ ] Check port mappings
@@ -119,6 +128,7 @@
 - [ ] CSRF protection
 - [ ] SQL injection prevention
 - [ ] Data encryption
+- [ ] SSL/TLS verification
 
 ### API Security
 - [ ] Endpoint protection
@@ -161,13 +171,13 @@
 ### 2. Replit Setup
 - [ ] Import repository from GitHub
 - [ ] Configure environment variables
-- [ ] Enable PostgreSQL
-- [ ] Run database migrations
+- [ ] Verify Neon PostgreSQL connection
+- [ ] Verify schema deployment
 - [ ] Start the server
 
 ### 3. Verification
 - [ ] Check all services
-- [ ] Verify connections
+- [ ] Verify database connections
 - [ ] Test core features
 - [ ] Monitor errors
 - [ ] Check logs
@@ -180,6 +190,7 @@
 - [ ] Enable log aggregation
 - [ ] Set up alerts
 - [ ] Verify metrics collection
+- [ ] Monitor database performance
 
 ### Documentation
 - [ ] Update API documentation
@@ -206,10 +217,11 @@
 
 ### Process
 1. Stop new service
-2. Restore backups
-3. Deploy previous version
-4. Verify functionality
-5. Notify stakeholders
+2. Verify database backup availability
+3. Restore from Neon backup if needed
+4. Deploy previous version
+5. Verify functionality
+6. Notify stakeholders
 
 ## Success Criteria
 
@@ -219,6 +231,7 @@
 - [ ] Performance metrics met
 - [ ] Security requirements met
 - [ ] Monitoring active
+- [ ] Database performing optimally
 
 ### Business
 - [ ] Features functional
@@ -238,7 +251,7 @@
 
 ### Service Providers
 - HeyGen Support: [Contact]
-- Database Provider: [Contact]
+- Neon Support: support@neon.tech
 - Replit Support: [Contact]
 - Security Service: [Contact]
 - Monitoring Service: [Contact]

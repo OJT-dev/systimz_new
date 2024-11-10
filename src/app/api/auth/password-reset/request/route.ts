@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@vercel/postgres';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -12,7 +12,10 @@ const requestSchema = z.object({
 const RATE_LIMIT_MINUTES = 15;
 
 export async function POST(req: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Parse and validate request body
     const body = await req.json();
     const result = requestSchema.safeParse(body);
@@ -29,9 +32,10 @@ export async function POST(req: NextRequest) {
     const { email } = result.data;
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const { rows: [user] } = await client.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
 
     // Don't reveal user existence, but don't proceed if user doesn't exist
     if (!user) {
@@ -44,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if email is verified
-    if (!user.emailVerified) {
+    if (!user.email_verified) {
       return new Response(
         JSON.stringify({
           error: 'Please verify your email before requesting a password reset.',
@@ -54,25 +58,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Clean up expired tokens
-    await prisma.passwordResetToken.deleteMany({
-      where: {
-        expires: {
-          lt: new Date(),
-        },
-      },
-    });
+    await client.query(
+      'DELETE FROM password_reset_tokens WHERE expires < NOW()'
+    );
 
     // Check rate limiting
-    const recentToken = await prisma.passwordResetToken.findFirst({
-      where: {
-        userId: user.id,
-        createdAt: {
-          gt: new Date(Date.now() - RATE_LIMIT_MINUTES * 60 * 1000),
-        },
-      },
-    });
+    const { rows: recentTokens } = await client.query(
+      'SELECT * FROM password_reset_tokens WHERE user_id = $1 AND created_at > NOW() - INTERVAL \'15 minutes\'',
+      [user.id]
+    );
 
-    if (recentToken) {
+    if (recentTokens.length > 0) {
       return new Response(
         JSON.stringify({
           error: `Please wait ${RATE_LIMIT_MINUTES} minutes before requesting another reset.`,
@@ -87,13 +83,10 @@ export async function POST(req: NextRequest) {
     expires.setHours(expires.getHours() + 1); // Token expires in 1 hour
 
     // Create reset token
-    await prisma.passwordResetToken.create({
-      data: {
-        userId: user.id,
-        token,
-        expires,
-      },
-    });
+    await client.query(
+      'INSERT INTO password_reset_tokens (user_id, token, expires) VALUES ($1, $2, $3)',
+      [user.id, token, expires.toISOString()]
+    );
 
     // TODO: Send password reset email
     // This would typically be handled by an email service
@@ -117,5 +110,7 @@ export async function POST(req: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }

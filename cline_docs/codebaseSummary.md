@@ -13,7 +13,7 @@ systimz_new/
 │   ├── store/          # Redux store
 │   ├── types/          # TypeScript definitions
 │   └── utils/          # Helper functions
-├── prisma/             # Database schema and migrations
+├── schema.sql          # PostgreSQL database schema
 ├── public/             # Static assets
 └── cline_docs/         # Project documentation
 ```
@@ -36,10 +36,11 @@ systimz_new/
 
 ### Authentication
 - `src/app/api/auth/`
-  - User registration
+  - User registration with PostgreSQL
   - Login/logout
   - Email verification
   - Password reset
+  - Edge runtime support
 
 ### API Routes
 - `src/app/api/`
@@ -47,6 +48,7 @@ systimz_new/
   - Message handling
   - WebSocket connections
   - HeyGen integration
+  - PostgreSQL queries
 
 ## Core Services
 
@@ -89,36 +91,43 @@ systimz_new/
 
 ## Database Schema
 
-### Core Models
-```prisma
-// User model
-model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified DateTime?
-  avatars       Avatar[]
-  messages      Message[]
-}
+### Core Tables
+```sql
+-- Users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email_verified TIMESTAMP,
+    image VARCHAR(255),
+    role VARCHAR(50) DEFAULT 'USER',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
-// Avatar model
-model Avatar {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-}
+-- Avatars table
+CREATE TABLE avatars (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    user_id UUID NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
-// Message model
-model Message {
-  id        String   @id @default(cuid())
-  content   String
-  type      String
-  userId    String
-  metadata  String?
-  user      User     @relation(fields: [userId], references: [id])
-}
+-- Messages table
+CREATE TABLE messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    content TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'user',
+    user_id UUID NOT NULL,
+    metadata TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 ```
 
 ## Testing Structure
@@ -133,7 +142,7 @@ model Message {
 - API route tests
 - Authentication flow
 - WebSocket communication
-- Database operations
+- PostgreSQL operations
 
 ### End-to-End Tests
 - User flows
@@ -148,18 +157,20 @@ model Message {
 - Resource endpoints
 - WebSocket API
 - Error handling
+- PostgreSQL queries
 
 ### Integration Guides
 - HeyGen setup
 - WebSocket implementation
 - Authentication flow
-- Database setup
+- PostgreSQL setup
 
 ### Development Guides
 - Local setup
 - Testing procedures
 - Deployment process
 - Best practices
+- Database migrations
 
 ## Key Features
 
@@ -176,7 +187,7 @@ model Message {
 - Error handling
 
 ### User System
-- Authentication
+- Edge-compatible authentication
 - Profile management
 - Avatar ownership
 - Access control
@@ -187,19 +198,22 @@ model Message {
 - Code splitting
 - Lazy loading
 - Image optimization
-- Cache management
+- Connection pooling
+- Edge runtime optimization
 
 ### Security
 - Input validation
 - XSS prevention
 - CSRF protection
 - Rate limiting
+- SQL injection prevention
 
 ### Error Handling
 - Graceful degradation
 - User feedback
 - Error logging
 - Recovery procedures
+- Database error handling
 
 ## Future Improvements
 
@@ -208,15 +222,18 @@ model Message {
 - Test coverage expansion
 - Documentation updates
 - Performance optimization
+- Query optimization
 
 ### Planned Features
 - Advanced avatar controls
 - Enhanced chat capabilities
 - Improved analytics
 - Extended API functionality
+- Full-text search
 
 ### Infrastructure
 - Scaling considerations
 - Monitoring improvements
 - Backup solutions
 - Security enhancements
+- High availability setup

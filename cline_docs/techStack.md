@@ -36,11 +36,21 @@
   - Animations
 
 ### Database
-- **Prisma ORM**
-  - Schema Definition
-  - Migrations
+- **PostgreSQL 15.7**
+  - Native Database Functions
+  - Connection Pooling
+  - UUID Support
+  - Full-Text Search
+  - JSON Support
+  - Triggers and Functions
+
+- **@vercel/postgres**
+  - Edge Runtime Support
+  - Connection Pooling
+  - SQL Query Builder
   - Type Safety
-  - Query Builder
+  - Transaction Support
+  - Prepared Statements
 
 ### Authentication
 - **NextAuth.js**
@@ -128,12 +138,13 @@
   - Analytics
   - Monitoring
 
-### Database Hosting
-- **PlanetScale**
-  - MySQL Compatible
-  - Horizontal Scaling
-  - Automatic Failover
-  - Branch Management
+### Database Infrastructure
+- **PostgreSQL on Replit**
+  - High Availability
+  - Automatic Backups
+  - Connection Pooling
+  - Monitoring
+  - Edge Runtime Support
 
 ### Media Storage
 - **AWS S3**
@@ -187,7 +198,7 @@
 - Browser Cache
 - CDN Cache
 - API Cache
-- Database Cache
+- Database Connection Pooling
 
 ### Monitoring
 - Core Web Vitals
@@ -202,13 +213,14 @@
 - npm/yarn
 - Git
 - VS Code
+- PostgreSQL 15.7
 
 ### VS Code Extensions
 - ESLint
 - Prettier
 - TypeScript
 - Tailwind CSS
-- Prisma
+- PostgreSQL
 
 ### Environment Variables
 ```env
@@ -220,7 +232,17 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-secret-here
 
 # Database
-DATABASE_URL=your-database-url
+POSTGRES_URL=postgres://username:password@hostname:port/database
+POSTGRES_HOST=hostname
+POSTGRES_USER=username
+POSTGRES_PASSWORD=password
+POSTGRES_DATABASE=database
+
+# OAuth
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
 
 # HeyGen
 HEYGEN_API_KEY=your-api-key
@@ -238,6 +260,7 @@ AWS_BUCKET=your-bucket
 - Integration Guides
 - Deployment Guides
 - Testing Guides
+- Database Migration Guides
 
 ## Future Considerations
 - GraphQL Integration

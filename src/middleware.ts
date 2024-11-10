@@ -1,37 +1,47 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-/**
- * Authentication middleware that protects routes by requiring a valid session.
- * Protected routes include:
- * - /dashboard
- * - /avatar/*
- * - /api/avatars/*
- */
-export default withAuth(
-  function middleware(_req: NextRequest) {
-    // Currently just passing through since withAuth handles the auth check
-    // Additional middleware logic can be added here if needed
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      // Only allow access if there's a valid token
-      authorized: ({ token }) => !!token,
-    },
-    pages: {
-      // Redirect to login page when unauthorized
-      signIn: "/auth/login",
-    },
+export function middleware(request: NextRequest) {
+  // Get response headers
+  const headers = new Headers({
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'X-Frame-Options': 'DENY',
+    'X-Content-Type-Options': 'nosniff',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+  });
+
+  // Get the current hostname from the request
+  const hostname = request.headers.get('host') || '';
+
+  // Clone the URL
+  const url = request.nextUrl.clone();
+
+  // Handle HTTP to HTTPS redirect
+  if (process.env.NODE_ENV === 'production' && !request.headers.get('x-forwarded-proto')?.includes('https')) {
+    url.protocol = 'https:';
+    url.host = hostname;
+    return NextResponse.redirect(url);
   }
-);
 
-// Configure which routes are protected by the middleware
+  // Return response with security headers
+  const response = NextResponse.next();
+  headers.forEach((value, key) => {
+    response.headers.set(key, value);
+  });
+
+  return response;
+}
+
 export const config = {
   matcher: [
-    "/dashboard",
-    "/avatar/:path*",
-    "/api/avatars/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

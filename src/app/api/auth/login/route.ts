@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@vercel/postgres';
 import { compare } from 'bcryptjs';
 import { z } from 'zod';
 
@@ -44,7 +44,10 @@ function recordLoginAttempt(email: string) {
 }
 
 export async function POST(req: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Parse and validate request body
     const body = await req.json();
     const result = loginSchema.safeParse(body);
@@ -71,9 +74,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const { rows: [user] } = await client.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
 
     if (!user) {
       recordLoginAttempt(email);
@@ -86,7 +90,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check email verification
-    if (!user.emailVerified) {
+    if (!user.email_verified) {
       return new Response(
         JSON.stringify({
           error: 'Please verify your email before logging in',
@@ -131,5 +135,7 @@ export async function POST(req: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }

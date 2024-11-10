@@ -1,0 +1,19 @@
+2024-11-10 16:24:47.750 UTC [23835] LOG:  starting PostgreSQL 15.7 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit
+2024-11-10 16:24:47.752 UTC [23835] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-11-10 16:24:47.752 UTC [23835] LOG:  could not bind IPv6 address "::1": Cannot assign requested address
+2024-11-10 16:24:47.756 UTC [23835] FATAL:  could not create lock file "/run/postgresql/.s.PGSQL.5432.lock": No such file or directory
+2024-11-10 16:24:47.758 UTC [23835] LOG:  database system is shut down
+2024-11-10 16:25:04.302 UTC [23989] LOG:  starting PostgreSQL 15.7 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit
+2024-11-10 16:25:04.303 UTC [23989] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-11-10 16:25:04.303 UTC [23989] LOG:  could not bind IPv6 address "::1": Cannot assign requested address
+2024-11-10 16:25:04.311 UTC [23989] LOG:  listening on Unix socket "/home/runner/systimznew/postgres/run/.s.PGSQL.5432"
+2024-11-10 16:25:04.321 UTC [23992] LOG:  database system was shut down at 2024-11-10 16:24:16 UTC
+2024-11-10 16:25:04.338 UTC [23989] LOG:  database system is ready to accept connections
+2024-11-10 16:30:04.422 UTC [23990] LOG:  checkpoint starting: time
+2024-11-10 16:30:17.693 UTC [23990] LOG:  checkpoint complete: wrote 130 buffers (0.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=12.742 s, sync=0.135 s, total=13.272 s; sync files=98, longest=0.028 s, average=0.002 s; distance=661 kB, estimate=661 kB
+2024-11-10 16:30:27.442 UTC [23989] LOG:  received smart shutdown request
+2024-11-10 16:30:27.475 UTC [23989] LOG:  background worker "logical replication launcher" (PID 23995) exited with exit code 1
+2024-11-10 16:30:27.475 UTC [23990] LOG:  shutting down
+2024-11-10 16:30:27.491 UTC [23990] LOG:  checkpoint starting: shutdown immediate
+2024-11-10 16:30:27.524 UTC [23990] LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.050 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=595 kB
+2024-11-10 16:30:27.529 UTC [23989] LOG:  database system is shut down

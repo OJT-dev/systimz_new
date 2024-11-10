@@ -1,14 +1,12 @@
 run = "npm run start"
 hidden = [".build", ".config"]
-modules = ["nodejs-20"]
 
-[nix]
-channel = "stable-24_05"
+[env]
+DATABASE_URL = "postgresql://neondb_owner:D0aCKpUjrFf1@ep-divine-bush-a49hwonr.us-east-1.aws.neon.tech/neondb?sslmode=require"
 
 [deployment]
 run = ["sh", "-c", "npm run start"]
 deploymentTarget = "cloudrun"
-ignorePorts = false
 
 [[ports]]
 localPort = 3000
@@ -17,25 +15,3 @@ externalPort = 80
 [[ports]]
 localPort = 3001
 externalPort = 3001
-
-[languages.typescript]
-pattern = "**/{*.ts,*.tsx}"
-syntax = "typescript"
-
-[languages.typescript.languageServer]
-start = ["typescript-language-server", "--stdio"]
-
-[packager]
-language = "nodejs"
-
-[packager.features]
-packageSearch = true
-guessImports = true
-
-[env]
-XDG_CONFIG_HOME = "/home/runner/.config"
-PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin"
-npm_config_prefix = "/home/runner/$REPL_SLUG/.config/npm/node_global"
-
-[gitHubImport]
-requiredFiles = [".replit", "replit.nix", ".config"]

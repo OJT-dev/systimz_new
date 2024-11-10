@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@vercel/postgres';
 import { z } from 'zod';
 import { hash } from 'bcryptjs';
 
@@ -16,7 +16,10 @@ const resetSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Parse and validate request body
     const body = await req.json();
     const result = resetSchema.safeParse(body);
@@ -33,9 +36,10 @@ export async function POST(req: NextRequest) {
     const { token, password } = result.data;
 
     // Find reset token
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
-    });
+    const { rows: [resetToken] } = await client.query(
+      'SELECT * FROM password_reset_tokens WHERE token = $1',
+      [token]
+    );
 
     if (!resetToken) {
       return new Response(
@@ -47,11 +51,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if token has expired
-    if (new Date() > resetToken.expires) {
+    if (new Date() > new Date(resetToken.expires)) {
       // Clean up expired token
-      await prisma.passwordResetToken.delete({
-        where: { token },
-      });
+      await client.query(
+        'DELETE FROM password_reset_tokens WHERE token = $1',
+        [token]
+      );
 
       return new Response(
         JSON.stringify({
@@ -62,19 +67,26 @@ export async function POST(req: NextRequest) {
     }
 
     try {
+      // Start transaction
+      await client.query('BEGIN');
+
       // Hash new password
       const hashedPassword = await hash(password, 12);
 
       // Update user's password
-      await prisma.user.update({
-        where: { id: resetToken.userId },
-        data: { password: hashedPassword },
-      });
+      await client.query(
+        'UPDATE users SET password = $1 WHERE id = $2',
+        [hashedPassword, resetToken.user_id]
+      );
 
       // Delete used token
-      await prisma.passwordResetToken.delete({
-        where: { token },
-      });
+      await client.query(
+        'DELETE FROM password_reset_tokens WHERE token = $1',
+        [token]
+      );
+
+      // Commit transaction
+      await client.query('COMMIT');
 
       return new Response(
         JSON.stringify({
@@ -83,10 +95,14 @@ export async function POST(req: NextRequest) {
         { status: 200 }
       );
     } catch (error) {
+      // Rollback transaction
+      await client.query('ROLLBACK');
+
       // Check if token was already used (concurrent reset attempts)
-      const tokenStillExists = await prisma.passwordResetToken.findUnique({
-        where: { token },
-      });
+      const { rows: [tokenStillExists] } = await client.query(
+        'SELECT * FROM password_reset_tokens WHERE token = $1',
+        [token]
+      );
 
       if (!tokenStillExists) {
         return new Response(
@@ -107,5 +123,7 @@ export async function POST(req: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }

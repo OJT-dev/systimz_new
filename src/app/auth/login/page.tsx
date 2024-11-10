@@ -20,20 +20,29 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const callbackUrl = `${baseUrl}/dashboard`;
+      
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
         redirect: false,
+        callbackUrl,
       });
 
       if (result?.error) {
-        showToast('Invalid email or password', 'error');
+        if (result.error === "Please verify your email before logging in") {
+          showToast('Please verify your email before logging in', 'error');
+        } else {
+          showToast('Invalid email or password', 'error');
+        }
         return;
       }
 
       showToast('Login successful!', 'success');
-      router.push('/dashboard');
+      router.push(callbackUrl);
     } catch (error) {
+      console.error('Login error:', error);
       showToast('Failed to login', 'error');
     } finally {
       setIsLoading(false);

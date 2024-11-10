@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@vercel/postgres';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
@@ -7,11 +7,14 @@ import { z } from 'zod';
 // Validation schema
 const createAvatarSchema = z.object({
   name: z.string().min(1, 'Name is required').trim(),
-  description: z.string().optional().nullable().transform(val => val?.trim() || null),
+  description: z.string().optional().nullable().transform((val: string | null | undefined) => val?.trim() || null),
 });
 
 export async function POST(request: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -39,13 +42,10 @@ export async function POST(request: NextRequest) {
     const { name, description } = result.data;
 
     // Create avatar
-    const avatar = await prisma.avatar.create({
-      data: {
-        name,
-        description,
-        userId: session.user.id,
-      },
-    });
+    const { rows: [avatar] } = await client.query(
+      'INSERT INTO avatars (name, description, user_id) VALUES ($1, $2, $3) RETURNING *',
+      [name, description, session.user.id]
+    );
 
     return new Response(
       JSON.stringify({
@@ -66,11 +66,16 @@ export async function POST(request: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }
 
 export async function GET() {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -83,10 +88,10 @@ export async function GET() {
     }
 
     // Get user's avatars
-    const avatars = await prisma.avatar.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const { rows: avatars } = await client.query(
+      'SELECT * FROM avatars WHERE user_id = $1 ORDER BY created_at DESC',
+      [session.user.id]
+    );
 
     return new Response(
       JSON.stringify({
@@ -107,5 +112,7 @@ export async function GET() {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }

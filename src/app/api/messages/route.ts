@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@vercel/postgres';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
@@ -23,7 +23,10 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX = 5;
 
 export async function POST(request: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -51,16 +54,12 @@ export async function POST(request: NextRequest) {
     const { content, type, metadata } = result.data;
 
     // Check rate limiting
-    const recentMessages = await prisma.message.count({
-      where: {
-        userId: session.user.id,
-        createdAt: {
-          gt: new Date(Date.now() - RATE_LIMIT_WINDOW),
-        },
-      },
-    });
+    const { rows: [{ count }] } = await client.query(
+      'SELECT COUNT(*) FROM messages WHERE user_id = $1 AND created_at > NOW() - INTERVAL \'1 minute\'',
+      [session.user.id]
+    );
 
-    if (recentMessages >= RATE_LIMIT_MAX) {
+    if (parseInt(count) >= RATE_LIMIT_MAX) {
       return new Response(
         JSON.stringify({
           error: `Rate limit exceeded. Please wait before sending more messages.`,
@@ -70,14 +69,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create message
-    const message = await prisma.message.create({
-      data: {
-        content,
-        type,
-        metadata,
-        userId: session.user.id,
-      },
-    });
+    const { rows: [message] } = await client.query(
+      'INSERT INTO messages (content, type, metadata, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [content, type, metadata, session.user.id]
+    );
 
     return new Response(
       JSON.stringify({
@@ -98,11 +93,16 @@ export async function POST(request: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }
 
 export async function GET(request: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -131,21 +131,21 @@ export async function GET(request: NextRequest) {
     }
 
     const { page, limit } = paginationResult.data;
+    const offset = (page - 1) * limit;
 
     // Get messages with pagination
-    const [messages, totalMessages] = await Promise.all([
-      prisma.message.findMany({
-        where: { userId: session.user.id },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.message.count({
-        where: { userId: session.user.id },
-      }),
+    const [{ rows: messages }, { rows: [{ count: totalMessages }] }] = await Promise.all([
+      client.query(
+        'SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+        [session.user.id, limit, offset]
+      ),
+      client.query(
+        'SELECT COUNT(*) FROM messages WHERE user_id = $1',
+        [session.user.id]
+      )
     ]);
 
-    const totalPages = Math.ceil(totalMessages / limit);
+    const totalPages = Math.ceil(parseInt(totalMessages) / limit);
 
     return new Response(
       JSON.stringify({
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
         pagination: {
           currentPage: page,
           totalPages,
-          totalMessages,
+          totalMessages: parseInt(totalMessages),
         },
       }),
       {
@@ -171,11 +171,16 @@ export async function GET(request: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }
 
 export async function DELETE(request: NextRequest) {
+  const client = createClient();
   try {
+    await client.connect();
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -201,12 +206,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete message
-    await prisma.message.delete({
-      where: {
-        id: messageId,
-        userId: session.user.id, // Ensure user owns the message
-      },
-    });
+    await client.query(
+      'DELETE FROM messages WHERE id = $1 AND user_id = $2',
+      [messageId, session.user.id]
+    );
 
     return new Response(
       JSON.stringify({
@@ -227,5 +230,7 @@ export async function DELETE(request: NextRequest) {
       }),
       { status: 500 }
     );
+  } finally {
+    await client.end();
   }
 }
