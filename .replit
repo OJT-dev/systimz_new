@@ -1,5 +1,6 @@
 run = "npm run start"
 hidden = [".build", ".config"]
+modules = ["nodejs-20"]
 
 [nix]
 channel = "stable-24_05"
@@ -12,6 +13,10 @@ ignorePorts = false
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
 
 [languages.typescript]
 pattern = "**/{*.ts,*.tsx}"

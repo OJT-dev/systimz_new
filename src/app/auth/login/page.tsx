@@ -65,6 +65,7 @@ export default function LoginPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
+                autoComplete="email"
               />
             </div>
             <div>
@@ -82,6 +83,7 @@ export default function LoginPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                autoComplete="current-password"
               />
             </div>
           </div>

@@ -62,6 +62,24 @@ Replit provides an integrated dependency management system through its GUI inter
 - Version control for system packages
 - Automatic dependency resolution
 
+### Nix Configuration
+The project uses a specific Nix configuration in `replit.nix` to ensure consistent environments:
+
+```nix
+{ pkgs }:
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.nodejs-20    # Node.js v20.16.0 for application runtime
+    pkgs.postgresql_15  # PostgreSQL 15 for database
+  ];
+}
+```
+
+This configuration:
+- Uses `mkShell` for proper environment isolation
+- Specifies exact versions of required dependencies
+- Ensures consistent development environments
+
 ### Management
 - Access through "System (Advanced)" tab
 - Add/remove system packages
@@ -106,6 +124,13 @@ Replit provides an integrated dependency management system through its GUI inter
    - Verify system requirements
    - Check package availability
    - Review system logs
+
+### Nix Environment Issues
+1. Environment compilation failures
+   - Verify replit.nix syntax
+   - Check package names and versions
+   - Use mkShell for proper environment setup
+   - Review Nix channel compatibility
 
 ### Resolution Steps
 1. Clear package cache if needed
