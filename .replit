@@ -1,12 +1,50 @@
 modules = ["nodejs-20", "web"]
-run = "npm run dev"
 
 [nix]
 channel = "stable-24_05"
 
-[deployment]
-run = ["sh", "-c", "npm run dev"]
+# Development configuration
+run = "npm install && npx prisma generate && npm run dev"
 
+# Build configuration
+[deployment]
+build = [
+  "npm install",
+  "npx prisma generate",
+  "npm run build"
+]
+run = ["sh", "-c", "concurrently \"npm start\" \"npm run ws\""]
+deploymentTarget = "cloudrun"
+
+# Port configuration
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[env]
+NEXT_PUBLIC_APP_URL = "$REPL_SLUG.repl.co"
+NEXTAUTH_URL = "https://$REPL_SLUG.repl.co"
+NEXTAUTH_SECRET = { "$NEXTAUTH_SECRET" }
+DATABASE_URL = { "$DATABASE_URL" }
+HEYGEN_API_KEY = { "$HEYGEN_API_KEY" }
+
+# Language configuration
+[languages.typescript]
+pattern = "**/{*.ts,*.tsx}"
+syntax = "typescript"
+
+[languages.typescript.languageServer]
+start = ["typescript-language-server", "--stdio"]
+
+# Package manager configuration
+[packager]
+language = "nodejs"
+
+[packager.features]
+packageSearch = true
+guessImports = true
+enabledForHosting = false

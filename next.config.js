@@ -7,7 +7,13 @@ export const nextConfig = {
     },
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', '*.repl.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.repl.co',
+      }
+    ]
   },
   webpack: (config) => {
     config.externals.push({
@@ -16,6 +22,39 @@ export const nextConfig = {
     });
     return config;
   },
+  // Optimize for production deployment
+  output: 'standalone',
+  poweredByHeader: false,
+  // Security headers
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          }
+        ]
+      }
+    ];
+  }
 };
 
 export default nextConfig;

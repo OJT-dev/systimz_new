@@ -67,6 +67,8 @@ HEYGEN_API_KEY=your-api-key
 - [Development Guide](cline_docs/setup/development.md)
 - [Production Guide](cline_docs/setup/production.md)
 - [Deployment Checklist](cline_docs/deployment_checklist.md)
+- [Replit Deployment](cline_docs/setup/replit-deployment.md)
+- [GitHub-Replit Integration](cline_docs/setup/github-replit-integration.md)
 
 ### API Documentation
 - [Authentication API](cline_docs/api/authentication.md)
@@ -131,6 +133,16 @@ npm run test:coverage
 ```
 
 ## Deployment
+
+### Replit Deployment
+1. Import project to Replit
+2. Configure environment variables in Replit Secrets
+3. Let Replit handle build and deployment
+4. Access your app at `https://your-repl-name.repl.co`
+
+For detailed Replit deployment instructions, see:
+- [Replit Deployment Guide](cline_docs/setup/replit-deployment.md)
+- [GitHub-Replit Integration](cline_docs/setup/github-replit-integration.md)
 
 ### Production Build
 ```bash

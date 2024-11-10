@@ -62,6 +62,23 @@
 - [ ] Verify build output
 - [ ] Check bundle size
 
+### Replit Configuration
+- [ ] Verify .replit file configuration
+- [ ] Check environment variables in Replit Secrets
+- [ ] Test build command in Replit
+- [ ] Verify WebSocket server configuration
+- [ ] Check port mappings
+- [ ] Test development server
+- [ ] Verify production build
+- [ ] Check GitHub integration
+
+### GitHub Integration
+- [ ] Configure GitHub Actions
+- [ ] Set up repository secrets
+- [ ] Test deployment workflow
+- [ ] Verify webhook configuration
+- [ ] Check branch protection rules
+
 ## Feature Testing
 
 ### Authentication
@@ -228,6 +245,6 @@
 ### Service Providers
 - HeyGen Support: [Contact]
 - Database Provider: [Contact]
-- Cloud Provider: [Contact]
+- Replit Support: [Contact]
 - Security Service: [Contact]
 - Monitoring Service: [Contact]
