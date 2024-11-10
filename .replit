@@ -4,7 +4,11 @@ modules = ["nodejs-20", "web"]
 channel = "stable-24_05"
 
 # Development configuration
-run = "npm install && npx prisma generate && npm run dev"
+run = """
+npm install
+npx prisma generate
+npm run dev
+"""
 
 # Build configuration
 [deployment]
@@ -13,7 +17,7 @@ build = [
   "npx prisma generate",
   "npm run build"
 ]
-run = ["sh", "-c", "concurrently \"npm start\" \"npm run ws\""]
+run = ["npm", "start"]
 deploymentTarget = "cloudrun"
 
 # Port configuration
@@ -21,16 +25,10 @@ deploymentTarget = "cloudrun"
 localPort = 3000
 externalPort = 80
 
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
+# Environment configuration
 [env]
-NEXT_PUBLIC_APP_URL = "$REPL_SLUG.repl.co"
-NEXTAUTH_URL = "https://$REPL_SLUG.repl.co"
-NEXTAUTH_SECRET = { "$NEXTAUTH_SECRET" }
-DATABASE_URL = { "$DATABASE_URL" }
-HEYGEN_API_KEY = { "$HEYGEN_API_KEY" }
+NEXT_PUBLIC_APP_URL = "https://systimznew.fooh.repl.co"
+NEXTAUTH_URL = "https://systimznew.fooh.repl.co"
 
 # Language configuration
 [languages.typescript]

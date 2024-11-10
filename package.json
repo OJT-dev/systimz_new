@@ -4,11 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"next dev\" \"node --loader ts-node/esm src/server.ts\"",
+    "dev": "node --loader ts-node/esm --no-warnings src/server.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node --loader ts-node/esm src/server.ts",
     "lint": "next lint",
-    "ws": "node --loader ts-node/esm src/server.ts",
     "test": "jest --detectOpenHandles"
   },
   "dependencies": {

@@ -3,12 +3,14 @@
 ## Pre-Deployment
 
 ### Environment Setup
-- [ ] Verify all environment variables
-  - [ ] HEYGEN_API_KEY
-  - [ ] DATABASE_URL
-  - [ ] NEXTAUTH_SECRET
-  - [ ] NEXTAUTH_URL
-  - [ ] Other service credentials
+- [ ] Verify all environment variables in Replit Secrets:
+  ```
+  NEXTAUTH_SECRET=systimz_production_secret_key_123
+  NEXTAUTH_URL=https://systimznew.fooh.repl.co
+  DATABASE_URL=postgresql://neondb_owner:D0aCKpUjrFf1@ep-divine-bush-a49hwonr.us-east-1.aws.neon.tech/neondb?sslmode=require
+  HEYGEN_API_KEY=MjYwZjg0OTFiMzQ5NGZiOTgwZTdhZDY0Njc3NTNjMGQtMTczMDg2Mzk1MQ==
+  NEXT_PUBLIC_APP_URL=https://systimznew.fooh.repl.co
+  ```
 
 ### Code Quality
 - [ ] Run linting checks
@@ -71,13 +73,6 @@
 - [ ] Test development server
 - [ ] Verify production build
 - [ ] Check GitHub integration
-
-### GitHub Integration
-- [ ] Configure GitHub Actions
-- [ ] Set up repository secrets
-- [ ] Test deployment workflow
-- [ ] Verify webhook configuration
-- [ ] Check branch protection rules
 
 ## Feature Testing
 
@@ -157,19 +152,18 @@
 
 ## Deployment Steps
 
-### 1. Backup
-- [ ] Database backup
-- [ ] Configuration backup
-- [ ] User data backup
-- [ ] Knowledge base backup
-- [ ] Log files backup
+### 1. GitHub Setup
+- [ ] Push all changes to GitHub
+- [ ] Verify repository contents
+- [ ] Check .gitignore
+- [ ] Ensure all configurations are committed
 
-### 2. Deployment
-- [ ] Stop current service
-- [ ] Deploy new code
-- [ ] Run migrations
-- [ ] Start new service
-- [ ] Verify deployment
+### 2. Replit Setup
+- [ ] Import repository from GitHub
+- [ ] Configure environment variables
+- [ ] Enable PostgreSQL
+- [ ] Run database migrations
+- [ ] Start the server
 
 ### 3. Verification
 - [ ] Check all services
